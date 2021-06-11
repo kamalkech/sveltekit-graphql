@@ -1,43 +1,50 @@
 import type { EndpointOutput, RequestHandler } from "@sveltejs/kit";
 import { ApolloServer, gql } from "apollo-server-lambda";
 
-type User = {
-  value: string,
-  title: string,
-}
+import { typeDefsUser, resolverUser } from '$lib/services/user.service'
 
 const typeDefs = gql`
-  type User {
-    value: String,
-    title: String,
-  }
-  type Query {
+  type Query
+  type Mutation
+`;
+
+const typeDefsA = gql`
+  extend type Query {
     hello: String
-    getItems: [User]
   }
-  type Mutation {
-    double(x: Int!): Int!
+  input CalculateInput {
+    x: Int!
+    y: Int!
+  }
+  extend type Mutation {
+    double(input: CalculateInput): Int!
+  }
+`;
+
+const typeDefsB = gql`
+  extend type Query {
+    islam: String
   }
 `;
 
 // Provide resolver functions for your schema fields
-const resolvers = {
+const resolversA = {
   Query: {
     hello: () => "Hello world!",
-    getItems: async (): Promise<User[]> => {
-      const res = await fetch('https://jsonplaceholder.cypress.io/users?_limit=10');
-      const data = await res.json();
-      return data.map((item) => ({ value: item.id, title: item.name }));
-    }
+    islam: () => "salam alikom"
   },
   Mutation: {
-    double: (_, { x }) => x * 2,
+    double: (_: any, args: any) => {
+      const { input } = args;
+      return input.x * input.y
+    },
   },
 };
 
+
 const apolloServer = new ApolloServer({
-  typeDefs,
-  resolvers,
+  typeDefs: [typeDefs, typeDefsA, typeDefsB, typeDefsUser],
+  resolvers: [resolversA, resolverUser],
   playground: true,
   introspection: true,
   tracing: true,
