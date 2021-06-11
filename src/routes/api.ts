@@ -1,13 +1,12 @@
 import type { EndpointOutput, RequestHandler } from "@sveltejs/kit";
 import { ApolloServer, gql } from "apollo-server-lambda";
-
 import { typeDefsUser, resolverUser } from '$lib/services/user.service'
 
+// TypeDefs
 const typeDefs = gql`
   type Query
   type Mutation
 `;
-
 const typeDefsA = gql`
   extend type Query {
     hello: String
@@ -20,14 +19,13 @@ const typeDefsA = gql`
     double(input: CalculateInput): Int!
   }
 `;
-
 const typeDefsB = gql`
   extend type Query {
     islam: String
   }
 `;
 
-// Provide resolver functions for your schema fields
+// Resolvers.
 const resolversA = {
   Query: {
     hello: () => "Hello world!",
@@ -41,7 +39,7 @@ const resolversA = {
   },
 };
 
-
+// Create ApolloServer.
 const apolloServer = new ApolloServer({
   typeDefs: [typeDefs, typeDefsA, typeDefsB, typeDefsUser],
   resolvers: [resolversA, resolverUser],
@@ -49,9 +47,7 @@ const apolloServer = new ApolloServer({
   introspection: true,
   tracing: true,
 });
-
 const graphqlHandler = apolloServer.createHandler();
-
 const handler: RequestHandler = async (args) => {
   return await new Promise<EndpointOutput>((resolve, reject) => {
     graphqlHandler(
